@@ -1,0 +1,12 @@
+[Unit]
+Description=A simple and customizable RPC client for discord on Linux made with Rust
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/linuxrpc run
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
