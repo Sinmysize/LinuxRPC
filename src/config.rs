@@ -1,6 +1,6 @@
 use std::{collections::HashMap, env::home_dir, fs::{self, File}, io::{Read, Seek, SeekFrom, Write}};
 
-const CONFIG_PATH: &'static str = ".config/ArchRPC";
+const CONFIG_PATH: &'static str = ".config/LinuxRPC";
 const CONFIG_FILE: &'static str = "config.rpc";
 
 pub struct Config {
