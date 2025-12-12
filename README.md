@@ -3,6 +3,17 @@ LinuxRPC is a simple and customizable Discord RPC client made in Rust for Arch L
 
 It will cycle through images and messages you set every 10 seconds, as well as show what you are listening to on media players (Currently locked to Spotify for the time being)
 
+## Contents
+[Installing](#installing-coming-soon)
+
+[Manual Build](#manually-building)
+
+[Configuration](#configuration)
+
+[Setting up Application](#setting-up-the-application)
+
+[Running LinuxRPC](#running-linuxrpc)
+
 ## Installing (Coming Soon)
 
 ## Manually Building
@@ -112,3 +123,15 @@ icon4
 Run `linuxrpc run` to test if it works. If you do everything correctly, it should display the image(s) you added.
 
 ![alt text](screenshots/image-5.png)
+
+## Running LinuxRPC
+When all your configuration is done and you want to let it run in the background, you can do two things:
+
+### Command
+Run `linuxrpc start` and the RPC client should run immediately.
+
+### Systemd
+Run `systemctl --user start linuxrpc.service --now` and the RPC client should run immediately.
+
+### Reboot
+Once you reboot your system, open Discord and see if it immediately starts running. (This should work if you ran `systemctl --user enable linuxrpc.service` prior)
