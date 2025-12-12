@@ -197,9 +197,13 @@ fn main() {
     match &*args[1] {
         "start" => {
             let cmd = Command::new("systemctl").args(["--user", "enable", "linuxrpc.service"]).output().unwrap();
-            let output = String::from_utf8(cmd.stdout).unwrap();
+            let err_output = String::from_utf8(cmd.stderr).unwrap();
 
-            println!("")
+            if err_output.is_empty() {
+                Command::new("systemctl").args(["--user", "start", "linuxrpc.service", "--now"]).output().unwrap();
+            } else {
+                println!("linuxrpc.service cannot be found.")
+            }
         },
         "run" => run_rpc(&mut client, &config).unwrap(),
         "config" => {
@@ -208,7 +212,7 @@ fn main() {
             match main_prompt {
                 0 => config_prompt(),
                 1 => {Command::new("systemctl").args(["--user", "restart", "linuxrpc.service"]).output().unwrap();},
-                2 => {Command::new("systemctl").args(["--user", "start", "linuxrpc.service"]).output().unwrap();},
+                2 => {Command::new("systemctl").args(["--user", "start", "linuxrpc.service", "--now"]).output().unwrap();},
                 3 => {Command::new("systemctl").args(["--user", "stop", "linuxrpc.service"]).output().unwrap();},
                 _ => panic!("How did we get here?")
             }
