@@ -24,7 +24,7 @@ $ cd LinuxRPC
 $ makepkg -si
 ```
 
-After building, it is highly recommended you run `systemctl --user enable linuxrpc.service` as to ensure everything runs properly.
+After building, it is highly recommended you run `systemctl --user enable linuxrpc.service` as to ensure the program automatically runs on boot and through the CLI.
 
 ## Configuration
 
@@ -130,7 +130,7 @@ When all your configuration is done and you want to let it run in the background
 ### Command
 Run `linuxrpc start` and the RPC client should run immediately.
 
-### Systemd
+### Systemd (Autostart)
 Run `systemctl --user start linuxrpc.service --now` and the RPC client should run immediately.
 
 ### Reboot
