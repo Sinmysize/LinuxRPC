@@ -58,6 +58,7 @@ In order to add pictures to your RPC client, you will first have to create an ap
 In order to get your Client ID, go to https://discord.com/developers/applications/ (Be sure to login if you have not done so).
 
 Next, click `New Application` give it a name (This will be the name that shows up as your status). You will then be redirected to the application's page.
+
 ![alt text](screenshots/image-2.png)
 
 Then, go to `OAuth2` on the side and under **Client Information**, you will find the Client ID
@@ -83,6 +84,7 @@ In order to add pictures to your RPC Client, go to your application's page and g
 ![alt text](screenshots/image-3.png)
 
 Next, under **Rich Presence Assets** click **Add Image(s)** and select any image you would want to appear in your RPC client.
+
 ![alt text](screenshots/image-4.png)
 
 Then, give the image(s) a name (you will need these names later).
