@@ -18,6 +18,7 @@ It will cycle through images and messages you set every 10 seconds, as well as s
 
 ## Manually Building
 
+### Arch Linux & Arch-based Distros
 ```bash
 $ git clone https://github.com/Sinmysize/LinuxRPC.git
 $ cd LinuxRPC
