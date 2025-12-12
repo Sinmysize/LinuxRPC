@@ -91,6 +91,24 @@ Then, give the image(s) a name (you will need these names later).
 
 Lastly, in your config (or do `linuxrpc config`, `Edit Config` > `Add to config` > `icons` or `default_icon` or `default_small_icon`), add the name of each image you added.
 
+Example (in config.rpc):
+```
+...
+
+[icons]
+icon1
+icon2
+
+[default_icon]
+icon3
+
+[default_small_icon]
+icon4
+
+...
+
+```
+
 Run `linuxrpc run` to test if it works. If you do everything correctly, it should display the image(s) you added.
 
 ![alt text](screenshots/image-5.png)
