@@ -49,6 +49,8 @@ Copy this config template into your config file and fill out your client ID
 
 [default_small_text]
 
+[player]
+
 ```
 
 ### Variables
@@ -61,6 +63,7 @@ Copy this config template into your config file and fill out your client ID
 - **[default_small_icon]**: The small picture in the bottom right corner of your icon. This will be the default picture that is set.
 - **[default_icon_text]**: The text that appears when you hover over your icon.
 - **[default_small_text]**: The text that appears when you hover over your small icon.
+- **[player]**: The player you wish to be displayed (Ex: spotify, your browser, etc.)
 
 ## Setting Up the Application
 
@@ -124,6 +127,31 @@ icon4
 Run `linuxrpc run` to test if it works. If you do everything correctly, it should display the image(s) you added.
 
 ![alt text](screenshots/image-5.png)
+
+### Choosing your media player
+
+You can display what song you are listening to by setting what media player in the config.
+
+First, choose which player you want to use. Any media player that playerctl can detect can work.
+
+The name is case sensitive to the config so ensure you find the proper name of the player. To find out the name of the media player, do `playerctl -l` and choose the name of the player. In some cases for browsers, it may contain other things besides the name. An example of this can be found by Firefox where it will show `firefox.instance_...`.
+This is not a problem as you can simply but `firefox` and it will still work. Feel free to create an issue if a media player does not work.
+
+Next, in you config add the name of the player.
+
+Example: 
+```
+...
+
+[player]
+spotify
+
+...
+```
+
+Finally, run `linuxrpc run` to test if it works. If everything is done correctly, it should display what you are listening to on the RPC client.
+
+![alt text](screenshots/image-6.png)
 
 ## Running LinuxRPC
 When all your configuration is done and you want to let it run in the background, you can do two things:
