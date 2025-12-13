@@ -4,21 +4,35 @@ use console::Style;
 use discord_rich_presence::{DiscordIpc, DiscordIpcClient, activity::{self, Assets, Timestamps}};
 use rand::seq::IndexedRandom;
 
-use crate::{cli::{config_prompt, create_selection}, config::Config};
+use crate::{cli::{config_prompt}, config::Config};
 
 mod config;
 mod cli;
 
-fn get_playerctl_spotify() -> Vec<String> {
+fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
+    let player = match &player {
+        Some(e) => &e[0],
+        None => "" 
+    };
+
     let metadata = Command::new("playerctl")
-    .args(["-p", "spotify", "metadata", "-f", "{{artist}}*{{album}}*{{title}}*{{length}}"])
+    .args(["-p", player, "metadata", "-f", "{{artist}}*{{album}}*{{title}}*{{length}}"])
     .output()
-    .expect("Something went wrong in getting metadata for spotify.");
+    .expect("Something went wrong in getting metadata.");
 
     let output = String::from_utf8_lossy(&metadata.stdout).into_owned();
-    
-    return output.split("*").map(|s| s.to_string()).collect::<Vec<String>>()
+    return output.split("*").map(|s| s.to_string()).collect::<Vec<String>>();
 }
+
+// fn get_playerctl_spotify() -> Vec<String> {
+//     let metadata = Command::new("playerctl")
+//     .args(["-p", "spotify", "metadata", "-f", "{{artist}}*{{album}}*{{title}}*{{length}}"])
+//     .output()
+//     .expect("Something went wrong in getting metadata for spotify.");
+
+//     let output = String::from_utf8_lossy(&metadata.stdout).into_owned(); 
+//     return output.split("*").map(|s| s.to_string()).collect::<Vec<String>>()
+// }
 
 fn set_activity(
     client: &mut DiscordIpcClient, 
@@ -129,7 +143,7 @@ fn run_rpc(mut client: &mut DiscordIpcClient, config: &Config) -> Result<(), Box
 
     loop {
         sleep(Duration::from_millis(10_000));
-        let data = get_playerctl_spotify();
+        let data = get_playerctl(config.data.get("player").cloned());
         let music_format = format!("♪ {} - {}", data[0], if data.len() == 1 { "ᓚᘏᗢ ᶻ z Z" } else { &data[2] });
 
         let text = messages.choose(&mut rand::rng()).map(|v| &**v);
@@ -161,36 +175,11 @@ fn main() {
     let mut config = Config::new();
     config.read_config();
 
-    let mut client = DiscordIpcClient::new(
-        match config.data.get("clientId") {
-            Some(d) =>  {
-                if d.len() == 0 {
-                    let red = Style::new().red();
-                    println!("{}", red.apply_to("NO CLIENT ID CURRENTLY PRESENT!!\nEdit Config > Add to config > clientId"));
-                    ""
-                } else {
-                    d[0].as_str()
-                }
-            }, 
-            None => {
-                let red = Style::new().red();
-                println!("{}", red.apply_to("NO CLIENT ID CURRENTLY PRESENT!!\nEdit Config > Add to config > clientId"));
-                ""
-            }
-        }
-    );
-
-    let selections = [
-        "Edit Config",
-        "Refresh RPC",
-        "Start RPC",
-        "Stop RPC"
-    ];
-
     let args = env::args().collect::<Vec<String>>();
+    let help_msg = "Usage: linuxrpc [cmd]\n  run: Runs the RPC client directly (Best to use 'start' to run in background)\n  start: Runs the RPC client in the background\n  stop: Disconnects the RPC client\n  config: Runs the config CLI";
 
     if args.len() <= 1 || args.len() < 2 {
-        println!("Usage: linuxrpc [cmd]\n run: Runs the RPC Client (Best to use 'start')\n config: Runs the config CLI");
+        println!("{help_msg}");
         return;
     }
 
@@ -205,19 +194,32 @@ fn main() {
                 println!("linuxrpc.service cannot be found.")
             }
         },
-        "run" => run_rpc(&mut client, &config).unwrap(),
-        "config" => {
-            let main_prompt = create_selection("Welcome to LinuxRPC CLI!", &selections.to_vec()).unwrap();
+        "run" => {
+            let mut client = DiscordIpcClient::new(
+            match config.data.get("clientId") {
+                    Some(d) =>  {
+                        if d.len() == 0 {
+                            let red = Style::new().red();
+                            println!("[LinuxRPC]: {}", red.apply_to("Your client ID is empty!! Edit Config > Add to config > clientId"));
+                            return;
+                        } else {
+                            d[0].as_str()
+                        }
+                    }, 
+                    None => {
+                        let red = Style::new().red();
+                        println!("[LinuxRPC]: {}", red.apply_to("Your client ID is empty!! Edit Config > Add to config > clientId"));
+                        return;
+                    }
+                }
+            );
 
-            match main_prompt {
-                0 => config_prompt(),
-                1 => {Command::new("systemctl").args(["--user", "restart", "linuxrpc.service"]).output().unwrap();},
-                2 => {Command::new("systemctl").args(["--user", "start", "linuxrpc.service", "--now"]).output().unwrap();},
-                3 => {Command::new("systemctl").args(["--user", "stop", "linuxrpc.service"]).output().unwrap();},
-                _ => panic!("How did we get here?")
-            }
+            run_rpc(&mut client, &config).unwrap()
         },
-        "help" => println!("Usage: linuxrpc [cmd]\n run: Runs the RPC Client (Best to use 'start')\n config: Runs the config CLI"),
-        _ => println!("Usage: linuxrpc [cmd]\n run: Runs the RPC Client (Best to use 'start')\n config: Runs the config CLI")
+        "config" => config_prompt(),
+        "stop" => {Command::new("systemctl").args(["--user", "stop", "linuxrpc.service"]).output().unwrap();},
+        "refresh" => {Command::new("systemctl").args(["--user", "restart", "linuxrpc.service"]).output().unwrap();},
+        "help" => println!("{help_msg}"),
+        _ => println!("{help_msg}")
     }
 }   

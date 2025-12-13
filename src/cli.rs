@@ -1,6 +1,6 @@
 use dialoguer::{Input, MultiSelect, Select};
 
-use crate::{config::{Config}, main};
+use crate::{config::{Config}};
 
 pub fn create_selection(prompt: &str, items: &Vec<&str>) -> Result<usize, dialoguer::Error> {
     Select::new()
@@ -26,7 +26,7 @@ pub fn create_input(prompt: &str) -> String {
 }
 
 pub fn config_prompt() {
-    let e = create_selection("Edit Config", &vec!["Add to config", "Remove from config", "Return"]).unwrap();
+    let e = create_selection("Edit Config", &vec!["Add to config", "Remove from config", "Exit"]).unwrap();
 
     match e {
         0 => {
@@ -57,7 +57,8 @@ pub fn config_prompt() {
         },
 
         2 => {
-            main();
+            println!("Have a nice day!");
+            return;
         }
 
         _ => {}

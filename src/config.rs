@@ -1,5 +1,7 @@
 use std::{collections::HashMap, env::home_dir, fs::{self, File}, io::{Read, Seek, SeekFrom, Write}};
 
+use console::Style;
+
 const CONFIG_PATH: &'static str = ".config/LinuxRPC";
 const CONFIG_FILE: &'static str = "config.rpc";
 
@@ -38,7 +40,9 @@ impl Config {
         let data = buffer.split("\n").map(|line| line.to_string()).collect::<Vec<String>>();
         
         if data.len() <= 1 && data[0] == "" {
-            println!("EMPTY CONFIG")
+            let red = Style::new().red();
+
+            println!("[LinuxRPC]: {}", red.apply_to("Your config.rpc is empty! Get the template here: https://github.com/Sinmysize/LinuxRPC?tab=readme-ov-file#configuration"));
         }
 
         let mut key = String::new();
