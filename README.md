@@ -9,8 +9,12 @@ It will cycle through images and messages you set every 10 seconds, as well as s
 [Manual Build](#manually-building)
 
 [Configuration](#configuration)
+- [Variables](#variables)
 
 [Setting up Application](#setting-up-the-application)
+- [Getting Client ID](#getting-the-client-id)
+- [Adding Pictures](#adding-pictures)
+- [Choosing Media Player](#choosing-your-media-player)
 
 [Running LinuxRPC](#running-linuxrpc)
 
@@ -128,7 +132,7 @@ Run `linuxrpc run` to test if it works. If you do everything correctly, it shoul
 
 ![alt text](screenshots/image-5.png)
 
-### Choosing your media player
+### Choosing Your Media Player
 
 You can display what song you are listening to by setting what media player in the config.
 
@@ -136,6 +140,8 @@ First, choose which player you want to use. Any media player that playerctl can 
 
 The name is case sensitive to the config so ensure you find the proper name of the player. To find out the name of the media player, do `playerctl -l` and choose the name of the player. In some cases for browsers, it may contain other things besides the name. An example of this can be found by Firefox where it will show `firefox.instance_...`.
 This is not a problem as you can simply but `firefox` and it will still work. Feel free to create an issue if a media player does not work.
+
+> **CAUTION** IF YOU SET THE PLAYER TO YOUR PLAYER, **IT WILL DISPLAY <u>ANY</u> VIDEO/SONGS YOU ARE LISTENING TO ON YOUR BROWSER! YOU HAVE BEEN WARNED!**
 
 Next, in you config add the name of the player.
 
