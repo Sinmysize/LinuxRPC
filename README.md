@@ -1,7 +1,7 @@
 # LinuxRPC
 LinuxRPC is a simple and customizable Discord RPC client made in Rust for Arch Linux (compatability for other distros coming soon).
 
-It will cycle through images and messages you set every 10 seconds, as well as show what you are listening to on media players (Currently locked to Spotify for the time being)
+It will cycle through images and messages you set every 10 seconds, as well as show what you are listening to on most media players.
 
 ## Contents
 [Installing](#installing-coming-soon)
