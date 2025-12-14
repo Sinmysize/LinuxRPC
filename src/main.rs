@@ -12,7 +12,7 @@ mod cli;
 fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
     let player = match &player {
         Some(e) => &e[0],
-        None => "" 
+        None => "Empty" 
     };
 
     let metadata = Command::new("playerctl")
