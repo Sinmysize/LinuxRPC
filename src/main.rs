@@ -11,7 +11,13 @@ mod cli;
 
 fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
     let player = match &player {
-        Some(e) => &e[0],
+        Some(e) => {
+            if e.len() == 0 {
+                "Empty"
+            } else {
+                &e[0]
+            }
+        },
         None => "Empty" 
     };
 
