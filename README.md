@@ -5,7 +5,6 @@ It will cycle through images and messages you set every 10 seconds, as well as s
 
 ## Contents
 [Installing](#installing-coming-soon)
-- [Cargo](#cargo)
 
 [Manual Build](#manually-building)
 
@@ -19,13 +18,8 @@ It will cycle through images and messages you set every 10 seconds, as well as s
 
 [Running LinuxRPC](#running-linuxrpc)
 
-## Installing
+## Installing (Coming Soon)
 
-### Cargo
-
-```
-cargo install linuxrpc
-```
 ## Manually Building
 
 ### Arch Linux & Arch-based Distros
