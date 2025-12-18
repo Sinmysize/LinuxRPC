@@ -1,7 +1,13 @@
 [package]
 name = "linuxrpc"
-version = "1.1.0"
+version = "1.0.0"
 edition = "2024"
+authors = ["Sinmysize <sinmysize@gmail.com>"]
+license = "MIT"
+description = "A simple and customizable RPC client for discord."
+repository = "https://github.com/Sinmysize/LinuxRPC"
+readme = "README.md"
+categories = ["command-line-utilities"]
 
 [dependencies]
 console = "0.16.1"
