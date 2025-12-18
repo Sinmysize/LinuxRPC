@@ -5,6 +5,7 @@ It will cycle through images and messages you set every 10 seconds, as well as s
 
 ## Contents
 [Installing](#installing-coming-soon)
+- [Cargo](#cargo)
 
 [Manual Build](#manually-building)
 
@@ -18,15 +19,20 @@ It will cycle through images and messages you set every 10 seconds, as well as s
 
 [Running LinuxRPC](#running-linuxrpc)
 
-## Installing (Coming Soon)
+## Installing
 
+### Cargo
+
+```
+cargo install linuxrpc
+```
 ## Manually Building
 
 ### Arch Linux & Arch-based Distros
 ```bash
-$ git clone https://github.com/Sinmysize/LinuxRPC.git
-$ cd LinuxRPC
-$ makepkg -si
+git clone https://github.com/Sinmysize/LinuxRPC.git
+cd LinuxRPC
+makepkg -si
 ```
 
 After building, it is highly recommended you run `systemctl --user enable linuxrpc.service` as to ensure the program automatically runs on boot and through the CLI.
