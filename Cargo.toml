@@ -9,6 +9,10 @@ repository = "https://github.com/Sinmysize/LinuxRPC"
 readme = "README.md"
 categories = ["command-line-utilities"]
 
+[[bin]]
+name = "linuxrpc"
+path = "src/main.rs"
+
 [dependencies]
 console = "0.16.1"
 dialoguer = "0.12.0"
