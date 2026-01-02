@@ -1,6 +1,6 @@
 # Maintainer: Sinmysize <sinmysize@gmail.com>
 pkgname=linuxrpc
-pkgver=1.1.0
+pkgver=1.2.0
 pkgrel=1
 pkgdesc="A Simple Discord RPC Client"
 arch=('x86_64')
