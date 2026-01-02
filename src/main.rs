@@ -9,6 +9,147 @@ use crate::{cli::{config_prompt}, config::Config};
 mod config;
 mod cli;
 
+#[derive(Debug, Default)]
+struct RPCState {
+    timestamp: i64,
+    icon: String,
+    icon_text: String,
+    small_icon: String,
+    small_text: String,
+    message: String,
+}
+
+impl RPCState {
+    fn new(config: &Config) -> Self {
+        let default_icon = match config.data.get("default_icon") {
+            Some(d) => {
+                if d.len() == 0 {
+                    "Empty"
+                } else {
+                    d[0].as_str()
+                }
+            },
+            None => "Empty"
+        };
+
+        let default_icon_text = match config.data.get("default_icon_text") {
+            Some(d) => {
+                if d.len() == 0 {
+                    "Made by Sinmysize"
+                } else {
+                    d[0].as_str()
+                }
+            },
+            None => "Made by Sinmysize"
+        };
+
+        let default_small_icon = match config.data.get("default_small_icon") {
+            Some(d) => {
+                if d.len() == 0 {
+                    "Empty"
+                } else {
+                    d[0].as_str()
+                }
+            },
+            None => "Empty"
+        };
+
+        let default_small_text = match config.data.get("default_small_text") {
+            Some(d) => {
+                if d.len() == 0 {
+                    "Using Linux"
+                } else {
+                    d[0].as_str()
+                }
+            },
+            None => "Using Linux"
+        };
+
+        Self {
+            timestamp: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
+            icon: default_icon.to_string(),
+            icon_text: default_icon_text.to_string(),
+            small_icon: default_small_icon.to_string(),
+            small_text: default_small_text.to_string(),
+            message: "A Simple RPC Client.".to_string()
+        }
+    }
+
+    fn run_rpc(&mut self, mut client: &mut DiscordIpcClient, config: &Config) -> Result<(), ()> {
+        let elapsed_time = Timestamps::new().start(self.timestamp);
+
+        let messages = match config.data.get("messages") {
+            Some(d) => d,
+            None => &vec!["Check your config! [messages] is empty!".to_string()]
+        };
+
+        let default_icon = match config.data.get("default_icon") {
+            Some(d) => {
+                if d.len() == 0 {
+                    "Empty"
+                } else {
+                    d[0].as_str()
+                }
+            },
+            None => "Empty"
+        };
+
+        let icons = match config.data.get("icons") {
+            Some(d) => d,
+            None => &vec![format!("{}", default_icon)]
+        };
+
+        match client.connect() {
+            Ok(_) => println!("Connected!"),
+            Err(_) => {
+                thread::sleep(Duration::from_millis(1_000));
+                println!("Trying to connect to RPC...");
+                self.run_rpc(client, config).unwrap();  
+            }
+        }
+
+        set_activity(
+            &mut client,
+            Some(&self.message),
+            Some(&self.icon),
+            Some(&self.icon_text),
+            None,
+            Some(&self.small_text),
+            Some(&self.small_icon),
+            elapsed_time.clone()
+        )
+        .expect("Something went wrong.");
+
+        loop {
+            sleep(Duration::from_millis(10_000));
+            let data = get_playerctl(config.data.get("player").cloned());
+            let music_format = format!("♪ {} - {}", data[0], if data.len() == 1 { "ᓚᘏᗢ ᶻ z Z" } else { &data[2] });
+
+            self.message = messages.choose(&mut rand::rng()).map(|v| &**v).unwrap().to_string();
+            self.icon = icons.choose(&mut rand::rng()).map(|v| &**v).unwrap().to_string();
+            let music: Option<&str> = Some(&music_format);
+            
+            match set_activity(
+                &mut client,
+            Some(&self.message),
+            Some(&self.icon),
+            Some(&self.icon_text),
+            music,
+            Some(&self.small_text),
+            Some(&self.small_icon),
+            elapsed_time.clone()
+            )
+            {
+                Ok(_) => {},
+                Err(_) => {
+                    println!("Something went wrong. Trying to reconnect...");
+                    self.run_rpc(client, config).unwrap();
+                }
+            }
+        }
+    }
+}
+
 fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
     let player = match &player {
         Some(e) => {
@@ -29,16 +170,6 @@ fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
     let output = String::from_utf8_lossy(&metadata.stdout).into_owned();
     return output.split("*").map(|s| s.to_string()).collect::<Vec<String>>();
 }
-
-// fn get_playerctl_spotify() -> Vec<String> {
-//     let metadata = Command::new("playerctl")
-//     .args(["-p", "spotify", "metadata", "-f", "{{artist}}*{{album}}*{{title}}*{{length}}"])
-//     .output()
-//     .expect("Something went wrong in getting metadata for spotify.");
-
-//     let output = String::from_utf8_lossy(&metadata.stdout).into_owned(); 
-//     return output.split("*").map(|s| s.to_string()).collect::<Vec<String>>()
-// }
 
 fn set_activity(
     client: &mut DiscordIpcClient, 
@@ -67,115 +198,6 @@ fn set_activity(
         )
     )
 }   
-
-fn run_rpc(mut client: &mut DiscordIpcClient, config: &Config) -> Result<(), Box<dyn std::error::Error>> {
-    let unix_timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64;
-    let elapsed_time = Timestamps::new().start(unix_timestamp);
-
-    let messages = match config.data.get("messages") {
-        Some(d) => d,
-        None => &vec!["Check your config! [messages] is empty!".to_string()]
-    };
-
-    let default_icon = match config.data.get("default_icon") {
-        Some(d) => {
-            if d.len() == 0 {
-                "Empty"
-            } else {
-                d[0].as_str()
-            }
-        },
-        None => "Empty"
-    };
-
-    let icons = match config.data.get("icons") {
-        Some(d) => d,
-        None => &vec![format!("{}", default_icon)]
-    };
-
-    let default_icon_text = match config.data.get("default_icon_text") {
-        Some(d) => {
-            if d.len() == 0 {
-                "Made by Sinmysize"
-            } else {
-                d[0].as_str()
-            }
-        },
-        None => "Made by Sinmysize"
-    };
-
-    let default_small_icon = match config.data.get("default_small_icon") {
-        Some(d) => {
-            if d.len() == 0 {
-                "Empty"
-            } else {
-                d[0].as_str()
-            }
-        },
-        None => "Empty"
-    };
-
-    let default_small_text = match config.data.get("default_small_text") {
-        Some(d) => {
-            if d.len() == 0 {
-                "Using Linux"
-            } else {
-                d[0].as_str()
-            }
-        },
-        None => "Using Linux"
-    };
-
-    match client.connect() {
-        Ok(_) => println!("Connected!"),
-        Err(_) => {
-            println!("Trying to connect to RPC...");
-            run_rpc(client, config).unwrap();
-            thread::sleep(Duration::from_millis(1_000));
-        }
-    };
-
-    set_activity(
-        &mut client,
-        None,
-        Some(default_icon),
-        Some(default_icon_text),
-        None,
-        Some(default_small_text),
-        Some(default_small_icon),
-        elapsed_time.clone()
-    )
-    .expect("Something went wrong.");
-
-    loop {
-        sleep(Duration::from_millis(10_000));
-        let data = get_playerctl(config.data.get("player").cloned());
-        let music_format = format!("♪ {} - {}", data[0], if data.len() == 1 { "ᓚᘏᗢ ᶻ z Z" } else { &data[2] });
-
-        let text = messages.choose(&mut rand::rng()).map(|v| &**v);
-        let icon = icons.choose(&mut rand::rng()).map(|v| &**v);
-        let music: Option<&str> = Some(&music_format);
-        
-        match set_activity(
-            &mut client,           
-            text, 
-            icon,
-            Some(default_icon_text),      
-            music,   
-            Some(default_small_text),
-            Some(default_small_icon),
-            elapsed_time.clone()
-        )
-        {
-            Ok(_) => {},
-            Err(_) => {
-                println!("Something went wrong. Trying to reconnect...");
-                run_rpc(client, config).unwrap();
-                thread::sleep(Duration::from_millis(1_000));
-            }
-        }
-    }
-}
 
 fn main() {
     let mut config = Config::new();
@@ -220,7 +242,8 @@ fn main() {
                 }
             );
 
-            run_rpc(&mut client, &config).unwrap()
+            let mut rpc = RPCState::new(&config);
+            let _ = rpc.run_rpc(&mut client, &config);
         },
         "config" => config_prompt(),
         "stop" => {Command::new("systemctl").args(["--user", "stop", "linuxrpc.service"]).output().unwrap();},
