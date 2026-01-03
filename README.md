@@ -1,7 +1,7 @@
 # LinuxRPC
-LinuxRPC is a simple and customizable Discord RPC client made in Rust for Arch Linux (compatability for other distros coming soon).
+LinuxRPC is a simple and customizable Discord RPC client made in Rust for a variety of Linux distros.
 
-It will cycle through images and messages you set every 10 seconds, as well as show what you are listening to on most media players.
+This program cycles through images and messages you set every 10 seconds, as well as show what you are listening to on most media players.
 
 ## Contents
 [Installing](#installing-coming-soon)
@@ -141,7 +141,7 @@ First, choose which player you want to use. Any media player that playerctl can 
 The name is case sensitive to the config so ensure you find the proper name of the player. To find out the name of the media player, do `playerctl -l` and choose the name of the player. In some cases for browsers, it may contain other things besides the name. An example of this can be found by Firefox where it will show `firefox.instance_...`.
 This is not a problem as you can simply but `firefox` and it will still work. Feel free to create an issue if a media player does not work.
 
-> **CAUTION** IF YOU SET THE PLAYER TO YOUR PLAYER, **IT WILL DISPLAY <u>ANY</u> VIDEO/SONGS YOU ARE LISTENING TO ON YOUR BROWSER! YOU HAVE BEEN WARNED!**
+> **CAUTION** IF YOU SET THE PLAYER TO YOUR PLAYER, **IT WILL DISPLAY <u>ANY</u> VIDEO OR SONG YOU ARE LISTENING TO ON YOUR BROWSER! YOU HAVE BEEN WARNED!**
 
 Next, in you config add the name of the player.
 
