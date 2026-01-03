@@ -75,36 +75,18 @@ impl RPCState {
         }
     }
 
-    fn run_rpc(&mut self, mut client: &mut DiscordIpcClient, config: &Config) -> Result<(), ()> {
+    fn run_rpc(&mut self, mut client: &mut DiscordIpcClient) -> Result<(), ()> {
+        let mut config = Config::new();
+        config.read_config();
+
         let elapsed_time = Timestamps::new().start(self.timestamp);
-
-        let messages = match config.data.get("messages") {
-            Some(d) => d,
-            None => &vec!["Check your config! [messages] is empty!".to_string()]
-        };
-
-        let default_icon = match config.data.get("default_icon") {
-            Some(d) => {
-                if d.len() == 0 {
-                    "Empty"
-                } else {
-                    d[0].as_str()
-                }
-            },
-            None => "Empty"
-        };
-
-        let icons = match config.data.get("icons") {
-            Some(d) => d,
-            None => &vec![format!("{}", default_icon)]
-        };
 
         match client.connect() {
             Ok(_) => println!("Connected!"),
             Err(_) => {
                 thread::sleep(Duration::from_millis(1_000));
                 println!("Trying to connect to RPC...");
-                self.run_rpc(client, config).unwrap();  
+                self.run_rpc(client).unwrap();  
             }
         }
 
@@ -122,6 +104,29 @@ impl RPCState {
 
         loop {
             sleep(Duration::from_millis(10_000));
+            config.read_config();
+
+            let messages = match config.data.get("messages") {
+                Some(d) => d,
+                None => &vec!["Check your config! [messages] is empty!".to_string()]
+            };
+
+            let default_icon = match config.data.get("default_icon") {
+                Some(d) => {
+                    if d.len() == 0 {
+                        "Empty"
+                    } else {
+                        d[0].as_str()
+                    }
+                },
+                None => "Empty"
+            };
+
+            let icons = match config.data.get("icons") {
+                Some(d) => d,
+                None => &vec![format!("{}", default_icon)]
+            };
+
             let data = get_playerctl(config.data.get("player").cloned());
             let music_format = format!("♪ {} - {}", data[0], if data.len() == 1 { "ᓚᘏᗢ ᶻ z Z" } else { &data[2] });
 
@@ -143,7 +148,7 @@ impl RPCState {
                 Ok(_) => {},
                 Err(_) => {
                     println!("Something went wrong. Trying to reconnect...");
-                    self.run_rpc(client, config).unwrap();
+                    self.run_rpc(client).unwrap();
                 }
             }
         }
@@ -211,6 +216,27 @@ fn main() {
         return;
     }
 
+    let mut client = DiscordIpcClient::new(
+    match config.data.get("clientId") {
+            Some(d) =>  {
+                if d.len() == 0 {
+                    let red = Style::new().red();
+                    println!("[LinuxRPC]: {}", red.apply_to("Your client ID is empty!! Edit Config > Add to config > clientId"));
+                    return;
+                } else {
+                    d[0].as_str()
+                }
+            }, 
+            None => {
+                let red = Style::new().red();
+                println!("[LinuxRPC]: {}", red.apply_to("Your client ID is empty!! Edit Config > Add to config > clientId"));
+                return;
+            }
+        }
+    );
+
+    let mut rpc = RPCState::new(&config);
+
     match &*args[1] {
         "start" => {
             let cmd = Command::new("systemctl").args(["--user", "enable", "linuxrpc.service"]).output().unwrap();
@@ -218,36 +244,16 @@ fn main() {
 
             if err_output.is_empty() {
                 Command::new("systemctl").args(["--user", "start", "linuxrpc.service", "--now"]).output().unwrap();
+                println!("[LinuxRPC]: {}", Style::new().green().apply_to("LinuxRPC is running!"));
             } else {
                 println!("linuxrpc.service cannot be found.")
             }
         },
         "run" => {
-            let mut client = DiscordIpcClient::new(
-            match config.data.get("clientId") {
-                    Some(d) =>  {
-                        if d.len() == 0 {
-                            let red = Style::new().red();
-                            println!("[LinuxRPC]: {}", red.apply_to("Your client ID is empty!! Edit Config > Add to config > clientId"));
-                            return;
-                        } else {
-                            d[0].as_str()
-                        }
-                    }, 
-                    None => {
-                        let red = Style::new().red();
-                        println!("[LinuxRPC]: {}", red.apply_to("Your client ID is empty!! Edit Config > Add to config > clientId"));
-                        return;
-                    }
-                }
-            );
-
-            let mut rpc = RPCState::new(&config);
-            let _ = rpc.run_rpc(&mut client, &config);
+            let _ = rpc.run_rpc(&mut client);
         },
         "config" => config_prompt(),
         "stop" => {Command::new("systemctl").args(["--user", "stop", "linuxrpc.service"]).output().unwrap();},
-        "refresh" => {Command::new("systemctl").args(["--user", "restart", "linuxrpc.service"]).output().unwrap();},
         "help" => println!("{help_msg}"),
         _ => println!("{help_msg}")
     }
