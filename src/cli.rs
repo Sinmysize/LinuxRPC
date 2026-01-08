@@ -33,27 +33,33 @@ pub fn config_prompt() {
             let mut config = Config::new();
             config.read_config();
 
-            let e = config.data.keys().map(|d| d.as_str()).collect::<Vec<&str>>();
+            let data = config.data.clone();
+            let keys = data.keys().map(|d| d.as_str()).collect::<Vec<&str>>();
 
-            let key = create_selection("Select key to edit", &e).unwrap();
+            let key = create_selection("Select key to edit", &keys).unwrap();
             let value = create_input("Enter value to add");
 
-            config.add_to_config(e[key].to_string(), value);
+            // Replaces it instead of adding another value
+            if keys[key] == "clientId" || keys[key] == "player" || keys[key].contains("default") {
+               config.remove_from_config(keys[key].to_string(), vec![value.clone()]);
+            }
+
+            config.add_to_config(keys[key].to_string(), value);
+            config_prompt();
         },
 
         1 => {
             let mut config = Config::new();
             config.read_config();
 
-            let e = config.data.keys().map(|d| d.as_str()).collect::<Vec<&str>>();
+            let keys = config.data.keys().map(|d| d.as_str()).collect::<Vec<&str>>();
+            let key = create_selection("Select key to edit", &keys).unwrap();
 
-            let key = create_selection("Select key to edit", &e).unwrap();
-
-            let x = config.data.get_key_value(&e[key].to_string()).map(|d| d.1.iter().map(|f| f.as_str()).collect::<Vec<&str>>()).unwrap();
-
+            let x = config.data.get_key_value(&keys[key].to_string()).map(|d| d.1.iter().map(|f| f.as_str()).collect::<Vec<&str>>()).unwrap();
             let value = create_multiselection("Select entries to remove (Press Space to select)", &x);
 
-            config.remove_from_config(e[key].to_string(), value.into_iter().map(|f| x[f].to_string()).collect::<Vec<String>>());
+            config.remove_from_config(keys[key].to_string(), value.into_iter().map(|f| x[f].to_string()).collect::<Vec<String>>());
+            config_prompt();
         },
 
         2 => {
