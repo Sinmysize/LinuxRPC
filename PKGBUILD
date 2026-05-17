@@ -1,6 +1,6 @@
 # Maintainer: Sinmysize <sinmysize@gmail.com>
 pkgname=linuxrpc
-pkgver=2
+pkgver=2.0.1
 pkgrel=1
 pkgdesc="A Simple Discord RPC Client"
 arch=(any)
@@ -8,7 +8,7 @@ url="https://github.com/Sinmysize/LinuxRPC.git"
 license=('MIT')
 depends=()
 makedepends=('rust' 'cargo')
-source=("$pkgname::git+https://github.com/Sinmysize/LinuxRPC.git")
+source=("$pkgname::git+https://github.com/Sinmysize/LinuxRPC.git#branch=v2-beta")
 sha256sums=("SKIP")
 
 prepare() {
