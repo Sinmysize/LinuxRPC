@@ -1,6 +1,6 @@
 # Maintainer: Sinmysize <sinmysize@gmail.com>
 pkgname=linuxrpc
-pkgver=1.4.0
+pkgver=2
 pkgrel=1
 pkgdesc="A Simple Discord RPC Client"
 arch=(any)
