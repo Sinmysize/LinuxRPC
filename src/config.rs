@@ -2,32 +2,63 @@ use std::{collections::HashMap, env::home_dir, fs::{self, File}, io::{Read, Seek
 
 use console::Style;
 
-const CONFIG_PATH: &'static str = ".config/LinuxRPC";
-const CONFIG_FILE: &'static str = "config.rpc";
+pub const CONFIG_PATH: &'static str = ".config/LinuxRPC";
+pub const CONFIG_FILE: &'static str = "config.rpc";
 
 pub struct Config {
-    file: File,
+    pub file: File,
     pub data: HashMap<String, Vec<String>>
 }
 
 impl Config {
-
     pub fn new() -> Self {
         let config_path: String = format!("{}/{}/{}", home_dir().unwrap().display(), CONFIG_PATH, CONFIG_FILE);
 
         fs::create_dir_all(format!("{}/{}", home_dir().unwrap().display(), CONFIG_PATH)).unwrap();
 
-        let file = fs::File::options()
+        let mut file = fs::File::options()
         .write(true)
         .read(true)
         .create(true)
         .open(&config_path)
         .unwrap();
+        
+        if file.metadata().unwrap().len() < 1 {
+            file.write_all(b"[active]").unwrap();
+        }
 
         Self { file , data: HashMap::new() }
     }
 
+    pub fn get_configs(&mut self) -> Vec<String> {
+        let mut dirs = fs::read_dir(format!("{}/{}", home_dir().unwrap().display(), CONFIG_PATH)).unwrap()
+        .map(|dir| {
+            dir.unwrap().file_name().to_str().unwrap().to_string()
+        })
+        .collect::<Vec<_>>();
+
+        for dir in dirs.clone() {
+            if dir.ends_with(CONFIG_FILE) {
+                let index = dirs.clone().into_iter().position(|e| e == dir).unwrap();
+                dirs.remove(index);
+
+                continue;
+            }
+
+            if dir.ends_with(".rpc") {
+                continue;
+            }
+
+            let index = dirs.clone().into_iter().position(|e| e == dir).unwrap();
+            dirs.remove(index);
+        }
+
+        dirs
+    }
+
     pub fn read_config(&mut self) {
+        self.data.clear();
+
         let config_path: String = format!("{}/{}", home_dir().unwrap().display(), CONFIG_PATH);
         fs::create_dir_all(&config_path).unwrap();
 
@@ -37,18 +68,21 @@ impl Config {
 
         let _ = file.seek(SeekFrom::Start(0));
 
-        let data = buffer.split("\n").map(|line| line.to_string()).collect::<Vec<String>>();
-        
+        let data = buffer.lines().map(|line| line.to_string()).collect::<Vec<String>>();
+
+        if data.len() == 0 {
+            return
+        }
+
         if data.len() <= 1 && data[0] == "" {
             let red = Style::new().red();
-
-            println!("[LinuxRPC]: {}", red.apply_to("Your config.rpc is empty! Get the template here: https://github.com/Sinmysize/LinuxRPC?tab=readme-ov-file#configuration"));
+            println!("[LinuxRPC]: {}", red.apply_to("The config you entered does not exist"));
         }
 
         let mut key = String::new();
 
         for line in data {
-            if line.is_empty() {
+            if line.is_empty() || line.starts_with("//") {
                 continue;
             }
 
@@ -68,26 +102,26 @@ impl Config {
     }
 
 
-    pub fn write_config(&mut self) {
+    fn write_config(&mut self) {
         let mut contents = String::new();
 
         let _ = self.file.set_len(0);
+        let _ = self.file.seek(SeekFrom::Start(0));
 
         for key in &self.data {
-            contents += &*format!("\n[{}]\n", key.0);
+            contents += &format!("\n[{}]\n", key.0);
 
             for value in key.1 {
-                contents += &*format!("{}\n", value);
+                contents += &*format!("{}\n", value.replace("\r", ""));
             }
         }
 
         let _ = self.file.write_all(contents.as_bytes());
-        println!("Made changes to config!");
     }
 
     pub fn add_to_config(&mut self, key: String, value: String) {
         if !self.data.contains_key(&key) {
-            println!("Som ting wong wit varina");
+            println!("Something went wrong getting the key");
             return
         }
 
@@ -100,7 +134,7 @@ impl Config {
 
     pub fn remove_from_config(&mut self, key: String, values: Vec<String>) {
         if !self.data.contains_key(&key) {
-            println!("Som ting wong wit varina");
+            println!("Something went wrong getting the key");
             return
         }
 
@@ -110,5 +144,4 @@ impl Config {
 
         self.write_config();
     }
-
 }
