@@ -29,7 +29,15 @@ cd LinuxRPC
 makepkg -si
 ```
 
-### Others (More Coming Soon)
+### Universal
+```bash
+https://github.com/Sinmysize/LinuxRPC.git
+cd LinuxRPC
+cargo install --path "path" # Must have cargo installed
+
+# Add this to your .bashrc, .zshrc, etc. if you have not
+export PATH=~/.cargo/bin:$PATH
+```
 
 ## Setting up an Application
 In order to add pictures to your RPC client, you will first have to create an application on Discord and acquire the Client ID.
@@ -103,7 +111,8 @@ Since I believe forcing the program to auto run feels like a violation of the us
 
 You can choose however to handle the auto run, whether through a config file, a service, or a chrontab.
 
-Here are a few examples for it to auto run on startup.
+#
+### **Here are a few examples for it to auto run on startup.**
 
 ### Hyprland Config
 You can add this line to your hyprland.conf file
