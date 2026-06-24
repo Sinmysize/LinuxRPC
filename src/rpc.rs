@@ -18,46 +18,22 @@ pub struct RPCState {
 impl RPCState {
     pub fn new(config: &Config) -> Self {
         let default_icon = match config.data.get("default_icon") {
-            Some(d) => {
-                if d.len() == 0 {
-                    "Empty"
-                } else {
-                    d[0].as_str()
-                }
-            },
-            None => "Empty"
+            Some(data) => data.clone().first().unwrap_or(&"Empty".to_string()).clone(),
+            None => "Empty".to_string()
         };
 
         let default_icon_text = match config.data.get("default_icon_text") {
-            Some(d) => {
-                if d.len() == 0 {
-                    "Made by Sinmysize"
-                } else {
-                    d[0].as_str()
-                }
-            },
+            Some(data) => data.first().map_or("Made by Sinmysize", |str| str),
             None => "Made by Sinmysize"
         };
 
         let default_small_icon = match config.data.get("default_small_icon") {
-            Some(d) => {
-                if d.len() == 0 {
-                    "Empty"
-                } else {
-                    d[0].as_str()
-                }
-            },
+            Some(data) => data.first().map_or("Empty", |str| str),
             None => "Empty"
         };
 
         let default_small_text = match config.data.get("default_small_text") {
-            Some(d) => {
-                if d.len() == 0 {
-                    "Using Linux"
-                } else {
-                    d[0].as_str()
-                }
-            },
+            Some(data) => data.first().map_or("Using Linux", |str| str),
             None => "Using Linux"
         };
 
@@ -78,7 +54,7 @@ impl RPCState {
         temp_config.read_config();
 
         let mut cached_active = match temp_config.data.get("active") { 
-            Some(d) => d[0].to_string(),
+            Some(data) => data.first().unwrap().clone(),
             None => "PLACEHOLDER".to_string() // This shouldn't be used at all, but you never know
         };
 
@@ -134,44 +110,34 @@ impl RPCState {
                 client.reconnect().unwrap();
             }
 
-            let messages = match config.data.get("messages") {
-                Some(d) => {
-                    if d.len() < 1 {
-                        &vec!["Check your config! [messages] is empty!".to_string()]
-                    } else {
-                        d
-                    }
-                },
-                None => &vec!["Check your config! [messages] is empty!".to_string()]
+            let mut messages = match config.data.get("messages") {
+                Some(data) => data.clone(),
+                None => vec!["Check your config! [messages] is empty!".to_string()]
             };
+
+            if messages.is_empty() {
+                messages.push("Check your config! [messages] is empty!".to_string());
+            }
 
             let default_icon = match config.data.get("default_icon") {
-                Some(d) => {
-                    if d.len() == 0 {
-                        "Empty"
-                    } else {
-                        d[0].as_str()
-                    }
-                },
-                None => "Empty"
+                Some(data) => data.clone().first().unwrap_or(&"Empty".to_string()).clone(),
+                None => "Empty".to_string()
             };
 
-            let icons = match config.data.get("icons") {
-                Some(d) => {
-                    if d.len() < 1 {
-                        &vec!["Empty".to_string()]
-                    } else {
-                        d
-                    }
-                },
-                None => &vec![format!("{}", default_icon)]
+            let mut icons = match config.data.get("icons") {
+                Some(data) => data.clone(),
+                None => vec![format!("{}", default_icon)]
             };
+
+            if icons.is_empty() {
+                icons.push("Empty".to_string());
+            }
 
             let data = get_playerctl(config.data.get("player").cloned());
             let music_format = format!("♪ {} - {}", data[0], if data.len() == 1 { "ᓚᘏᗢ ᶻ z Z" } else { &data[2] });
 
-            self.message = messages.choose(&mut rand::rng()).map(|v| &**v).unwrap().to_string();
-            self.icon = icons.choose(&mut rand::rng()).map(|v| &**v).unwrap().to_string();
+            self.message = messages.choose(&mut rand::rng()).map(|selected| selected.to_string()).unwrap();
+            self.icon = icons.choose(&mut rand::rng()).map(|selected| selected.to_string()).unwrap();
             let music: Option<&str> = Some(&music_format);
             
             match set_activity(
@@ -197,14 +163,8 @@ impl RPCState {
 
 fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
     let player = match &player {
-        Some(e) => {
-            if e.len() == 0 {
-                "Empty"
-            } else {
-                &e[0]
-            }
-        },
-        None => "Empty" 
+        Some(data) => data.first().map_or("Empty", |str| str),
+        None => "Empty"
     };
 
     let metadata = Command::new("playerctl")
