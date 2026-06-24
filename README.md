@@ -29,7 +29,7 @@ cd LinuxRPC
 makepkg -si
 ```
 
-### Universal
+### All Distros
 ```bash
 https://github.com/Sinmysize/LinuxRPC.git
 cd LinuxRPC
@@ -100,7 +100,6 @@ This is not a problem as you can simply but `firefox` and it will still work. Fe
 > **CAUTION** IF YOU SET THE PLAYER TO YOUR PLAYER, **IT WILL DISPLAY <u>ANY</u> VIDEO OR SONG YOU ARE LISTENING TO ON YOUR BROWSER! YOU HAVE BEEN WARNED!**
 
 ## Running Program
-If you manually built the binary, I recommend putting the executable in `/usr/bin` or `/usr/local/bin` for easier use. But you can keep the executable anywhere, just ensure the path points to it: `/path/to/linuxrpc`.
 
 To start the RPC client, simply run `linuxrpc start` and it will run in the background.
 
@@ -135,7 +134,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/linuxrpc run
+ExecStart=/path/to/linuxrpc run
 Restart=on-failure
 RestartSec=10
 
