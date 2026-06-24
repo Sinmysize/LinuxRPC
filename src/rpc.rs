@@ -120,7 +120,7 @@ impl RPCState {
             }
 
             let default_icon = match config.data.get("default_icon") {
-                Some(data) => data.clone().first().unwrap_or(&"Empty".to_string()).clone(),
+                Some(data) => data.first().unwrap_or(&"Empty".to_string()).clone(),
                 None => "Empty".to_string()
             };
 
