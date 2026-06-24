@@ -48,7 +48,15 @@ fn main() {
     let mut rpc = RPCState::new(&config);
  
     match &*args[1] {
-        "start" => {Command::new("/usr/bin/linuxrpc").arg("run").spawn().unwrap();},
+        "start" => {
+            let executable_path = Command::new("which")
+            .arg("linuxrpc")
+            .output()
+            .expect("Error trying to retrieve path to executable");
+
+            let program = String::from_utf8(executable_path.stdout).unwrap().trim().to_string();
+            Command::new(program).arg("run").spawn().unwrap();
+        },
         "run" => {rpc.run_rpc(&mut config).unwrap();},
         "config" => config_prompt(&mut config),
         "stop" => {Command::new("pkill").arg("linuxrpc").output().unwrap();},
