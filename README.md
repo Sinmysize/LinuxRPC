@@ -75,10 +75,9 @@ You are able to manually create config files in the `.config/LinuxRPC` directory
 ## Configuration
 To edit, create, and remove configs, use the provided CLI by running `linuxrpc config`.
 
-Below are the variables in each config. 
+Below are the variables in each config.
 
 ### Variables
-
 - **[clientId]**: The client ID you get from your application.
 
 - **[icons]**: The big picture you see in the rich presence.
@@ -88,6 +87,10 @@ Below are the variables in each config.
 - **[default_icon_text]**: The text that appears when you hover over your icon.
 - **[default_small_text]**: The text that appears when you hover over your small icon.
 - **[player]**: The player you wish to be displayed (Ex: spotify, your browser, etc.)
+- **[button1_label]**: Label for button 1.
+- **[button2_label]**: Label for button 2.
+- **[button1_url]**: Url for button 1 (must be the full URL).
+- **[button2_url]**: Url for button 2 (must be the full URL).
 
 ### Choosing a Media Player
 You can display what song you are listening to by setting what media player in the config.
