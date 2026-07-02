@@ -1,6 +1,6 @@
 # Maintainer: Sinmysize <sinmysize@gmail.com>
 pkgname=linuxrpc
-pkgver=2.1.0
+pkgver=2.2.0
 pkgrel=1
 pkgdesc="A Simple Discord RPC Client"
 arch=(any)
@@ -26,5 +26,5 @@ build() {
 package() {
     cd "$pkgname"
 
-    install -Dm755 -t "$pkgdir/usr/bin/" "target/release/$pkgname"
+    install -Dm700 -t "$pkgdir/usr/bin/" "target/release/$pkgname"
 }
