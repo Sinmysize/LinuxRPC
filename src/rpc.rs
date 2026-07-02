@@ -1,11 +1,11 @@
 use std::{env::home_dir, fs, process::Command, thread, time::Duration};
 
-use discord_rich_presence::{DiscordIpc, DiscordIpcClient, activity::{self, Assets, Timestamps}};
+use discord_rich_presence::{DiscordIpc, DiscordIpcClient, activity::{self, Assets, Button, Timestamps}};
 use rand::seq::IndexedRandom;
 
 use crate::{config::{CONFIG_PATH, Config}};
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct RPCState {
     timestamp: i64,
     icon: String,
@@ -13,6 +13,7 @@ pub struct RPCState {
     small_icon: String,
     small_text: String,
     message: String,
+    buttons: Vec<(String, String)>
 }
 
 impl RPCState {
@@ -37,13 +38,42 @@ impl RPCState {
             None => "Using Linux"
         };
 
+        let button1 = {
+            let label = match config.data.get("button1_label") {
+                Some(data) => data.first().map_or("", |str| str),
+                None => ""
+            };
+
+            let url = match config.data.get("button1_url") {
+                Some(data) => data.first().map_or("", |str| str),
+                None => ""
+            };
+
+            (label.to_string(), url.to_string())
+        };
+
+        let button2 = {
+            let label = match config.data.get("button2_label") {
+                Some(data) => data.first().map_or("", |str| str),
+                None => ""
+            };
+
+            let url = match config.data.get("button2_url") {
+                Some(data) => data.first().map_or("", |str| str),
+                None => ""
+            };
+
+            (label.to_string(), url.to_string())
+        };
+
         Self {
             timestamp: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
             icon: default_icon.to_string(),
             icon_text: default_icon_text.to_string(),
             small_icon: default_small_icon.to_string(),
             small_text: default_small_text.to_string(),
-            message: "A Simple RPC Client.".to_string()
+            message: "A Simple RPC Client.".to_string(),
+            buttons: vec![button1, button2]
         }
     }
 
@@ -78,6 +108,7 @@ impl RPCState {
             None,
             Some(&self.small_text),
             Some(&self.small_icon),
+            self.buttons.clone(),
             elapsed_time.clone()
         )
         .expect("Something went wrong.");
@@ -148,6 +179,7 @@ impl RPCState {
             music,
             Some(&self.small_text),
             Some(&self.small_icon),
+            self.buttons.clone(),
             elapsed_time.clone()
             )
             {
@@ -158,6 +190,11 @@ impl RPCState {
                 }
             }
         }
+    }
+
+    pub fn stop_rpc(self, config: &Config) {
+        let mut client = DiscordIpcClient::new(&config.data.get("clientId").expect("Failed to get [clientId] from config. Please check if [clientId] exists and has a valid ID")[0]);
+        client.close().unwrap();
     }
 }
 
@@ -184,8 +221,20 @@ fn set_activity(
     music: Option<&str>,
     small_text: Option<&str>,
     small_icon: Option<&str>,
+    buttons: Vec<(String, String)>,
     elapsed_time: Timestamps
 ) -> Result<(), discord_rich_presence::error::Error> {
+    let mut cached_buttons = vec![];
+
+    for button in buttons {
+        if button.0.is_empty() || button.1.is_empty() {
+            continue;
+        }
+
+        let new_button = Button::new(button.0, button.1);
+        cached_buttons.push(new_button);
+    }
+
     client.set_activity(
         activity::Activity::new()
         .details(text.unwrap_or("A Simple RPC Client."))
@@ -198,6 +247,7 @@ fn set_activity(
             .small_image(small_icon.unwrap_or("Empty"))
             .small_text(small_text.unwrap_or("Empty"))
         )
+        .buttons(cached_buttons)
         .timestamps(
             elapsed_time.clone()
         )
