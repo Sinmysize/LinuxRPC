@@ -59,7 +59,10 @@ fn main() {
         },
         "run" => {rpc.run_rpc(&mut config).unwrap();},
         "config" => config_prompt(&mut config),
-        "stop" => {Command::new("pkill").arg("linuxrpc").output().unwrap();},
+        "stop" => {
+            Command::new("pkill").arg("linuxrpc").output().unwrap();
+            rpc.stop_rpc(&config);
+        },
         "help" => println!("{help_msg}"),
         _ => println!("{help_msg}")
     }
