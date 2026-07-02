@@ -87,7 +87,7 @@ pub fn config_prompt(config: &mut Config) {
                     let value = create_input("Enter value to add");
 
                     // Replaces the value instead of adding another value
-                    if keys[key] == "clientId" || keys[key] == "player" || keys[key].contains("default") {
+                    if keys[key] == "clientId" || keys[key] == "player" || keys[key].contains("default") || keys[key].contains("button") {
                         config.remove_from_config(keys[key].to_string(), vec![value.clone()]);
                     }
 
