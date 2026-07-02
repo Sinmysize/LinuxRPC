@@ -26,5 +26,5 @@ build() {
 package() {
     cd "$pkgname"
 
-    install -Dm700 -t "$pkgdir/usr/bin/" "target/release/$pkgname"
+    install -Dm755 -t "$pkgdir/usr/bin/" "target/release/$pkgname"
 }
