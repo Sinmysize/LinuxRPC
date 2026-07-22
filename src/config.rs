@@ -144,4 +144,31 @@ impl Config {
 
         self.write_config();
     }
+
+    pub fn read_active_config(&mut self) {
+        match self.data.get("active") {
+            Some(d) => {
+                if d.len() != 0 {
+                    if !fs::exists(format!("{}/{}/{}", home_dir().unwrap().display(), CONFIG_PATH, d[0])).unwrap() {
+                        let red = Style::new().red();
+                        println!("[LinuxRPC]: {}", red.apply_to(format!("The config {} does not exist. Please swap to a different config or create a new one.", d[0])));
+                    } else {
+                        self.file = fs::File::options()
+                        .write(true)
+                        .read(true)
+                        .create(true)
+                        .open(format!("{}/{}/{}", home_dir().unwrap().display(), CONFIG_PATH, d[0]))
+                        .unwrap();
+                    }
+                } else {
+                    let yellow = Style::new().yellow();
+                    println!("[LinuxRPC]: {}", yellow.apply_to("There are no configs active. Please swap to a config or create a new one."));
+                }
+
+                self.read_config();
+            },
+
+            None => {}
+        };
+    }
 }
