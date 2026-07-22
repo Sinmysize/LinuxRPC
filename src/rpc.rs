@@ -3,9 +3,9 @@ use std::{env::home_dir, fs, process::Command, thread, time::Duration};
 use discord_rich_presence::{DiscordIpc, DiscordIpcClient, activity::{self, Assets, Button, Timestamps}};
 use rand::seq::IndexedRandom;
 
-use crate::{config::{CONFIG_PATH, Config}};
+use crate::{cli::{err_message, std_message, success_message}, config::{CONFIG_PATH, Config}};
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct RPCState {
     timestamp: i64,
     icon: String,
@@ -13,14 +13,15 @@ pub struct RPCState {
     small_icon: String,
     small_text: String,
     message: String,
+    music: String,
     buttons: Vec<(String, String)>
 }
 
 impl RPCState {
     pub fn new(config: &Config) -> Self {
         let default_icon = match config.data.get("default_icon") {
-            Some(data) => data.clone().first().unwrap_or(&"Empty".to_string()).clone(),
-            None => "Empty".to_string()
+            Some(data) => data.first().map_or("Empty", |str| str),
+            None => "Empty"
         };
 
         let default_icon_text = match config.data.get("default_icon_text") {
@@ -73,6 +74,7 @@ impl RPCState {
             small_icon: default_small_icon.to_string(),
             small_text: default_small_text.to_string(),
             message: "A Simple RPC Client.".to_string(),
+            music: "Loading Client...".to_string(),
             buttons: vec![button1, button2]
         }
     }
@@ -88,33 +90,18 @@ impl RPCState {
             None => "PLACEHOLDER".to_string() // This shouldn't be used at all, but you never know
         };
 
-        let elapsed_time = Timestamps::new().start(self.timestamp);
         let mut client = DiscordIpcClient::new(&config.data.get("clientId").expect("Failed to get [clientId] from config. Please check if [clientId] exists and has a valid ID")[0]);
 
         match client.connect() {
-            Ok(_) => println!("Connected!"),
+            Ok(_) => println!("{}", success_message("Connected!")),
             Err(_) => {
+                println!("{}", std_message("Trying to reconnect..."));
+                self.run_rpc(config).unwrap();
                 thread::sleep(Duration::from_millis(1_000));
-                println!("Trying to connect to RPC...");
-                self.run_rpc(config).unwrap();  
             }
         }
-
-        set_activity(
-            &mut client,
-            Some(&self.message),
-            Some(&self.icon),
-            Some(&self.icon_text),
-            None,
-            Some(&self.small_text),
-            Some(&self.small_icon),
-            self.buttons.clone(),
-            elapsed_time.clone()
-        )
-        .expect("Something went wrong.");
-
+    
         loop {
-            thread::sleep(Duration::from_millis(10_000));
             config.read_config();
             
             let mut temp_config = Config::new();
@@ -164,31 +151,19 @@ impl RPCState {
                 icons.push("Empty".to_string());
             }
 
-            let data = get_playerctl(config.data.get("player").cloned());
-            let music_format = format!("♪ {} - {}", data[0], if data.len() == 1 { "ᓚᘏᗢ ᶻ z Z" } else { &data[2] });
-
             self.message = messages.choose(&mut rand::rng()).map(|selected| selected.to_string()).unwrap();
             self.icon = icons.choose(&mut rand::rng()).map(|selected| selected.to_string()).unwrap();
-            let music: Option<&str> = Some(&music_format);
+            self.music = get_playerctl(config);
             
-            match set_activity(
-                &mut client,
-            Some(&self.message),
-            Some(&self.icon),
-            Some(&self.icon_text),
-            music,
-            Some(&self.small_text),
-            Some(&self.small_icon),
-            self.buttons.clone(),
-            elapsed_time.clone()
-            )
-            {
+            match self.clone().set_activity(&mut client) {
                 Ok(_) => {},
                 Err(_) => {
-                    println!("Something went wrong. Trying to reconnect...");
+                    println!("{}", err_message("Something went wrong. Trying to reconnect..."));
                     self.run_rpc(config).unwrap();
                 }
             }
+
+            thread::sleep(Duration::from_millis(10_000));
         }
     }
 
@@ -196,10 +171,40 @@ impl RPCState {
         let mut client = DiscordIpcClient::new(&config.data.get("clientId").expect("Failed to get [clientId] from config. Please check if [clientId] exists and has a valid ID")[0]);
         client.close().unwrap();
     }
+
+    pub fn set_activity(self, client: &mut DiscordIpcClient) -> Result<(), discord_rich_presence::error::Error> {
+        let mut cached_buttons = vec![];
+
+        for button in self.buttons {
+            if button.0.is_empty() || button.1.is_empty() {
+                continue;
+            }
+
+            let new_button = Button::new(button.0, button.1);
+            cached_buttons.push(new_button);
+        }
+
+        client.set_activity(
+            activity::Activity::new()
+            .details(self.message)
+            .state(self.music)
+            .assets(
+                Assets::new()
+                .large_image(self.icon) 
+                .large_text(self.icon_text)
+                .small_image(self.small_icon)
+                .small_text(self.small_text)
+            )
+            .buttons(cached_buttons)
+            .timestamps(
+                Timestamps::new().start(self.timestamp)
+            )
+        )
+    }  
 }
 
-fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
-    let player = match &player {
+fn get_playerctl(config: &Config) -> String {
+    let player = match config.data.get("player") {
         Some(data) => data.first().map_or("Empty", |str| str),
         None => "Empty"
     };
@@ -209,47 +214,6 @@ fn get_playerctl(player: Option<Vec<String>>) -> Vec<String> {
     .output()
     .expect("Something went wrong in getting metadata.");
 
-    let output = String::from_utf8_lossy(&metadata.stdout).into_owned();
-    return output.split("*").map(|s| s.to_string()).collect::<Vec<String>>();
+    let output = String::from_utf8_lossy(&metadata.stdout).into_owned().split("*").map(|s| s.to_string()).collect::<Vec<String>>();
+    return format!("♪ {} - {}", output[0], if output.len() == 1 { "ᓚᘏᗢ ᶻ z Z" } else { &output[2] });
 }
-
-fn set_activity(
-    client: &mut DiscordIpcClient, 
-    text: Option<&str>, 
-    icon: Option<&str>, 
-    icon_text: Option<&str>,
-    music: Option<&str>,
-    small_text: Option<&str>,
-    small_icon: Option<&str>,
-    buttons: Vec<(String, String)>,
-    elapsed_time: Timestamps
-) -> Result<(), discord_rich_presence::error::Error> {
-    let mut cached_buttons = vec![];
-
-    for button in buttons {
-        if button.0.is_empty() || button.1.is_empty() {
-            continue;
-        }
-
-        let new_button = Button::new(button.0, button.1);
-        cached_buttons.push(new_button);
-    }
-
-    client.set_activity(
-        activity::Activity::new()
-        .details(text.unwrap_or("A Simple RPC Client."))
-        .state(music.unwrap_or("Loading LinuxRPC..."))
-        .assets(
-            Assets::new()
-            // Will default to discord placeholder icon! (Can change if manually building)
-            .large_image(icon.unwrap_or("Empty")) 
-            .large_text(icon_text.unwrap_or("Empty"))
-            .small_image(small_icon.unwrap_or("Empty"))
-            .small_text(small_text.unwrap_or("Empty"))
-        )
-        .buttons(cached_buttons)
-        .timestamps(
-            elapsed_time.clone()
-        )
-    )
-}  
