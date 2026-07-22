@@ -1,7 +1,6 @@
 /target
 /pkg
 .vscode/
-README_old.md
 *.pkg.tar.zst
 *.pkg.tar.xz
 *.pkg.tar.gz
