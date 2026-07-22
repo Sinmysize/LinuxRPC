@@ -1,14 +1,30 @@
 use std::{env::home_dir, fs, io::Write};
 
+use console::Style;
 use dialoguer::{Input, MultiSelect, Select};
 
 use crate::config::{CONFIG_PATH, Config};
+
+pub fn err_message(message: &str) -> String {
+    let red = Style::new().red();
+    format!("{}: {}", red.apply_to("[LinuxRPC]"), message)
+}
+
+pub fn std_message(message: &str) -> String {
+    let white = Style::new().white();
+    format!("{}: {}", white.apply_to("[LinuxRPC]"), message)
+}
+
+pub fn success_message(message: &str) -> String {
+    let green = Style::new().green();
+    format!("{}: {}", green.apply_to("[LinuxRPC]"), message)
+}
 
 fn create_selection(prompt: &str, items: &Vec<&str>) -> usize {
     Select::new()
     .with_prompt(prompt)
     .default(0)
-    .items(items)// &Vec<&str>
+    .items(items)
     .interact()
     .unwrap()
 }
@@ -92,14 +108,14 @@ pub fn config_prompt(config: &mut Config) {
                     }
 
                     if keys[key] == "active" {
-                        println!("[LinuxRPC]: It is not recommended to edit this field directly. This is done to prevent errors.");
+                        println!("{}", err_message("It is not recommended to edit this field directly. This is done to prevent errors."));
                         return config_prompt(config);
                     }
 
                     config.add_to_config(keys[key].to_string(), value);
                 },
 
-                // Removing from configconfig
+                // Removing from config
                 1 => {
                     config.read_config();
 
@@ -147,7 +163,7 @@ pub fn config_prompt(config: &mut Config) {
                 },
 
                 1 => {
-                    println!("[LinuxRPC]: Aborted deletion.");
+                    println!("{}", std_message("Aborted Deletion."))
                 },
 
                 _ => {}
