@@ -8,6 +8,7 @@ url="https://github.com/Sinmysize/LinuxRPC.git"
 license=('GPL')
 makedepends=('rust' 'cargo')
 source=("$pkgname::git+https://github.com/Sinmysize/LinuxRPC.git")
+sha256sums=("SKIP")
 
 prepare() {
     cd "$pkgname"
