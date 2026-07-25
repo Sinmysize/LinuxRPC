@@ -91,6 +91,7 @@ Below are the variables in each config.
 - **[button2_label]**: Label for button 2.
 - **[button1_url]**: Url for button 1 (must be the full URL).
 - **[button2_url]**: Url for button 2 (must be the full URL).
+- **[interval]**: Interval between each refresh.
 
 ### Choosing a Media Player
 You can display what song you are listening to by setting what media player in the config.

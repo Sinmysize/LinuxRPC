@@ -139,7 +139,7 @@ pub fn config_prompt(config: &mut Config) {
 
         // Create Config
         2 => {
-            let config_template = b"[clientId]\n\n[icons]\n\n[messages]\n\n[default_icon]\n\n[default_small_icon]\n\n[default_icon_text]\n\n[default_small_text]\n\n[player]\n\n[button1_label]\n\n[button2_label]\n\n[button1_url]\n\n[button2_url]\n";
+            let config_template = b"[clientId]\n\n[icons]\n\n[messages]\n\n[default_icon]\n\n[default_small_icon]\n\n[default_icon_text]\n\n[default_small_text]\n\n[player]\n\n[button1_label]\n\n[button2_label]\n\n[button1_url]\n\n[button2_url]\n\n[interval]\n";
             let file_name = create_input("Name your config file");
 
             let mut new_config = fs::File::create_new(format!("{}/{}/{}.rpc", home_dir().unwrap().display(), CONFIG_PATH, file_name)).unwrap();

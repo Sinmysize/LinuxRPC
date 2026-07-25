@@ -14,7 +14,8 @@ pub struct RPCState {
     small_text: String,
     message: String,
     music: String,
-    buttons: Vec<(String, String)>
+    buttons: Vec<(String, String)>,
+    interval: u8
 }
 
 impl RPCState {
@@ -67,6 +68,11 @@ impl RPCState {
             (label.to_string(), url.to_string())
         };
 
+        let interval = match config.data.get("interval") {
+            Some(data) => data.first().map_or(10, |int| int.parse().expect(&err_message("Interval value is greater than an 8 bit integer (255). Please use a smaller interval."))),
+            None => 10
+        };
+
         Self {
             timestamp: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
             icon: default_icon.to_string(),
@@ -75,7 +81,8 @@ impl RPCState {
             small_text: default_small_text.to_string(),
             message: "A Simple RPC Client.".to_string(),
             music: "Loading Client...".to_string(),
-            buttons: vec![button1, button2]
+            buttons: vec![button1, button2],
+            interval
         }
     }
 
@@ -163,7 +170,7 @@ impl RPCState {
                 }
             }
 
-            thread::sleep(Duration::from_millis(10_000));
+            thread::sleep(Duration::from_secs(self.interval as u64));
         }
     }
 
